@@ -135,27 +135,7 @@ const doorTypes = [
     },
   },
 ];
-// inventories
-const inventories = [
-  {
-    doorType: "7de7671c-c4fe-465d-98c0-edba5f4fc8b2",
-    inventoryId: "3e163267-725a-42cb-8d25-9948096f55ab",
-    categoryName: "Category 2345555",
-    locationName: "Location 1",
-    inventoryName: "Inve11",
-    sku: "fg5555",
-    qty: 0,
-  },
-  {
-    doorType: "7de7671c-c4fe-465d-98c0-edba5f4fc8b2",
-    inventoryId: "779b0865-90a2-4cc3-853b-f51a561805ea",
-    categoryName: "Category 1",
-    locationName: "Location 1",
-    inventoryName: "Test ACB",
-    sku: "SKU CH777",
-    qty: 0,
-  },
-];
+
 // products
 const products = [
   {
@@ -220,9 +200,24 @@ const renderLineSpace = (lines) => {
   return emptyArray;
 };
 
-const fileName = `${invoice.invoiceNo}.xlsx`;
+const fileName = `${invoice.invoiceNo}-without-inventories.xlsx`;
 
-const handleExport = () => {
+const handleExport = ({
+  companyInfo,
+  invoice,
+  customer,
+  billingAddress,
+  projectLocation,
+  doorTypes,
+  products,
+  remarks,
+  terms,
+  warranty,
+  invoicePaymentTerm,
+  subInvoice,
+  subInvoiceProductServices,
+  subInvoicePaymentTerm,
+}) => {
   const space0 = 2;
 
   let companyInforTable = [];
@@ -459,41 +454,6 @@ const handleExport = () => {
   const spaceAfterDoorType = 1;
 
   // **
-  // Inventories
-  // **
-
-  let inventoryTable = [];
-  let subInventoryTableLines;
-  inventories.forEach((inventory, index) => {
-    let subTable = [];
-    subTable.push({
-      A: `Door Type ${index + 1} Inventory List`,
-    });
-    subTable.push({});
-    subTable.push({
-      A: "Inventory Name",
-      B: "Category",
-      C: "Location",
-      D: "SKU",
-      E: "Qty",
-    });
-    subTable.push({
-      A: inventory?.inventoryName,
-      B: inventory?.categoryName,
-      C: inventory?.locationName,
-      D: inventory?.sku,
-      E: inventory?.qty,
-    });
-    subTable.push({});
-
-    subInventoryTableLines = subTable.length;
-    inventoryTable = [...inventoryTable, ...subTable];
-  });
-
-  const inventoryTableLines = inventoryTable.length;
-  const spaceAfterInventory = 1;
-
-  // **
   // Products
   // **
 
@@ -703,8 +663,6 @@ const handleExport = () => {
     ...renderLineSpace(spaceAfterProjectLocation),
     ...doorTypeTable,
     ...renderLineSpace(spaceAfterDoorType),
-    ...inventoryTable,
-    ...renderLineSpace(spaceAfterInventory),
     ...productTable,
     ...renderLineSpace(spaceAfterProduct),
     ...remarkTable,
@@ -782,30 +740,8 @@ const handleExport = () => {
     return headers;
   };
 
-  const totalLinesBeforeInventoryTable =
-    totalLinesBeforeDoorTypeTable + doorTypeTableLines + spaceAfterDoorType;
-
-  const getInventoryHeaders = (inventories) => {
-    let headers = {};
-    let subHeaders = {};
-    inventories.forEach((_, index) => {
-      headers[`inventoryHeader${index}`] = `A${
-        totalLinesBeforeInventoryTable + 1 + subInventoryTableLines * index
-      }:E${
-        totalLinesBeforeInventoryTable + 1 + subInventoryTableLines * index
-      }`;
-      subHeaders[`subInventoryHeader${index}`] = `A${
-        totalLinesBeforeInventoryTable + 3 + subInventoryTableLines * index
-      }:E${
-        totalLinesBeforeInventoryTable + 3 + subInventoryTableLines * index
-      }`;
-    });
-
-    return { ...headers, ...subHeaders };
-  };
-
   const totalLinesBeforeProductTable =
-    totalLinesBeforeInventoryTable + inventoryTableLines + spaceAfterInventory;
+    totalLinesBeforeDoorTypeTable + doorTypeTableLines + spaceAfterDoorType;
 
   const totalLinesBeforeRemarkTable =
     totalLinesBeforeProductTable + productTableLines + spaceAfterProduct;
@@ -855,7 +791,6 @@ const handleExport = () => {
     }`,
     ...getProjectLocationHeaders(projectLocation),
     ...getDoorTypeHeaders(doorTypes),
-    ...getInventoryHeaders(inventories),
     productHeader: `A${totalLinesBeforeProductTable + 1}:E${
       totalLinesBeforeProductTable + 1
     }`,
@@ -978,20 +913,6 @@ const addStyles = (dataInfo) => {
       });
       doorTypes.forEach((_, index) => {
         sheet.range(dataInfo[`workOrderHeader${index}`]).merged(true).style({
-          bold: true,
-          fontSize: 12,
-          fill: "C8C8C8",
-        });
-      });
-      inventories.forEach((_, index) => {
-        sheet.range(dataInfo[`inventoryHeader${index}`]).merged(true).style({
-          bold: true,
-          fontSize: 12,
-          bottomBorder: true,
-          bottomBorderColor: "000000",
-          bottomBorderStyle: "thin",
-        });
-        sheet.range(dataInfo[`subInventoryHeader${index}`]).style({
           bold: true,
           fontSize: 12,
           fill: "C8C8C8",
@@ -1186,9 +1107,39 @@ const addStyles = (dataInfo) => {
 const generateCSV = (fn) => {
   fs.unlink(fileName, (err) => {
     if (err) {
-      fn();
+      fn({
+        companyInfo,
+        invoice,
+        customer,
+        billingAddress,
+        projectLocation,
+        doorTypes,
+        products,
+        remarks,
+        terms,
+        warranty,
+        invoicePaymentTerm,
+        subInvoice,
+        subInvoiceProductServices,
+        subInvoicePaymentTerm,
+      });
     } else {
-      fn();
+      fn({
+        companyInfo,
+        invoice,
+        customer,
+        billingAddress,
+        projectLocation,
+        doorTypes,
+        products,
+        remarks,
+        terms,
+        warranty,
+        invoicePaymentTerm,
+        subInvoice,
+        subInvoiceProductServices,
+        subInvoicePaymentTerm,
+      });
     }
   });
 };
