@@ -15,9 +15,9 @@ const companyInfo = {
   website: "https://doorsuisse.sg/",
 };
 
-// invoice general
-const invoice = {
-  invoiceNo: "INV4180",
+// quotation general
+const quotation = {
+  quotationNo: "QT4180",
   projectNo: "PM5332",
   createdDate: "2023-06-16T04:19:42.993Z",
   estimateStartDate: "2023-06-16T04:19:42.993Z",
@@ -185,32 +185,6 @@ const warranty = {
   startDate: "2023-05-29T17:00:00.000Z",
   endDate: "2023-05-29T17:00:00.000Z",
 };
-// payment term
-const invoicePaymentTerm = "Cash";
-// Sub invoice detail
-const subInvoice = {
-  invoiceNo: "INV0001",
-  dateIssued: "2023-05-29T17:00:00.000Z",
-};
-// Sub invoice products
-const subInvoiceProductServices = [
-  {
-    productId: "3dfa769b-47f1-48be-be38-cc1dcffd0047",
-    qty: 1,
-    productName: "Product4",
-    unit: "Set",
-    price: 15,
-  },
-  {
-    productId: "13a7915c-038e-4faf-a5e1-9fe2f4c7fe81",
-    qty: 1,
-    productName: "product 3",
-    unit: "Set",
-    price: 500,
-  },
-];
-// Sub invoice payment term
-const subInvoicePaymentTerm = "Credit Terms";
 
 const renderLineSpace = (lines) => {
   let emptyArray = [];
@@ -220,11 +194,11 @@ const renderLineSpace = (lines) => {
   return emptyArray;
 };
 
-const fileName = `${invoice.invoiceNo}.xlsx`;
+const fileName = `${quotation.quotationNo}-with-inventory.xlsx`;
 
 const handleExport = ({
   companyInfo,
-  invoice,
+  quotation,
   customer,
   billingAddress,
   projectLocation,
@@ -234,10 +208,6 @@ const handleExport = ({
   remarks,
   terms,
   warranty,
-  invoicePaymentTerm,
-  subInvoice,
-  subInvoiceProductServices,
-  subInvoicePaymentTerm,
 }) => {
   const space0 = 2;
 
@@ -272,40 +242,40 @@ const handleExport = ({
   const companyInforLines = companyInforTable.length;
   const spaceAfterCompanyInfor = 4;
 
-  let invoiceTable = [];
-  invoiceTable.push({
-    A: "Invoice",
+  let quoteTable = [];
+  quoteTable.push({
+    A: "Quotation",
   });
-  invoiceTable.push({});
-  invoiceTable.push({
+  quoteTable.push({});
+  quoteTable.push({
     A: "Project No.:",
-    B: invoice.projectNo,
+    B: quotation.projectNo,
   });
-  invoiceTable.push({
+  quoteTable.push({
     A: "Estimated Project Start Date:",
-    B: `${invoice.createdDate} check!`,
+    B: `${quotation.createdDate} check!`,
   });
-  invoiceTable.push({
-    A: "Invoice No.:",
-    B: invoice.invoiceNo,
+  quoteTable.push({
+    A: "QuotationNo No.:",
+    B: quotation.quotationNo,
   });
-  invoiceTable.push({
+  quoteTable.push({
     A: "Date Issued: ",
-    B: `${invoice.createdDate} check!`,
+    B: `${quotation.createdDate} check!`,
   });
-  invoiceTable.push({
+  quoteTable.push({
     A: "Contract/Project Period:",
     B:
-      `${moment(invoice.contractPeriod?.from).format("DD-MM-YYYY")} to ${moment(
-        invoice.contractPeriod?.to
-      ).format("DD-MM-YYYY")}` ||
-      `${moment(invoice.projectPeriod?.from).format("DD-MM-YYYY")} to ${moment(
-        invoice.projectPeriod?.to
-      ).format("DD-MM-YYYY")}`,
+      `${moment(quotation.contractPeriod?.from).format(
+        "DD-MM-YYYY"
+      )} to ${moment(quotation.contractPeriod?.to).format("DD-MM-YYYY")}` ||
+      `${moment(quotation.projectPeriod?.from).format(
+        "DD-MM-YYYY"
+      )} to ${moment(quotation.projectPeriod?.to).format("DD-MM-YYYY")}`,
   });
 
-  const invoiceTableLines = invoiceTable.length;
-  const spaceAfterInvoice = 2;
+  const quoteTableLines = quoteTable.length;
+  const spaceAfterQuote = 2;
 
   let customerDetailTable = [];
   customerDetailTable.push({
@@ -541,18 +511,18 @@ const handleExport = ({
     C: "Subtotal",
     D: `$${subTotal}`,
   });
-  const gstValue = (subTotal * invoice.gst) / 100;
+  const gstValue = (subTotal * quotation.gst) / 100;
   productTable.push({
-    C: `GST ${invoice.gst}%`,
+    C: `GST ${quotation.gst}%`,
     D: `$${gstValue}`,
   });
   productTable.push({
     C: "Discount",
-    D: `$${invoice.discount}`,
+    D: `$${quotation.discount}`,
   });
   productTable.push({
     C: "Total",
-    D: `$${subTotal + gstValue - invoice.discount}`,
+    D: `$${subTotal + gstValue - quotation.discount}`,
   });
 
   const productTableLines = productTable.length;
@@ -611,94 +581,6 @@ const handleExport = ({
   const spaceAfterWararanty = 2;
 
   // **
-  // Payment term
-  // **
-
-  let paymentTermTable = [];
-  paymentTermTable.push({
-    A: "Payment Terms",
-  });
-  paymentTermTable.push({
-    A: invoicePaymentTerm,
-  });
-  paymentTermTable.push({});
-
-  const paymentTermTableLines = paymentTermTable.length;
-  const spaceAfterPaymentTerm = 4;
-
-  // **
-  // Sub invoice detail
-  // **
-
-  let subInvoiceTable = [];
-  subInvoiceTable.push({
-    A: "Sub Invoice",
-  });
-  subInvoiceTable.push({});
-  subInvoiceTable.push({
-    A: "Sub Invoice No.:",
-    B: subInvoice.invoiceNo,
-  });
-  subInvoiceTable.push({
-    A: "Date Issued: ",
-    B: `${moment(subInvoice.dateIssued).format("DD-MM-YYYY")}`,
-  });
-
-  const subInvoiceTableLines = subInvoiceTable.length;
-  const spaceAfterSubInvoice = 2;
-
-  // **
-  // Sub invoice products
-  // **
-
-  let subInvoiceProductTable = [];
-  let subInvoiceProductTotal = 0;
-  let totalLinesBeforeSubInvoiceProductSumary;
-  subInvoiceProductTable.push({
-    A: "Products/Services",
-  });
-  subInvoiceProductTable.push({});
-  subInvoiceProductTable.push({
-    A: "Product/Service",
-    B: "Qty",
-    C: "Unit",
-    D: "Price",
-  });
-  subInvoiceProductServices.forEach((product) => {
-    subInvoiceProductTable.push({
-      A: product.productName,
-      B: product.qty,
-      C: product.unit,
-      D: product.price,
-    });
-    subInvoiceProductTotal += product.qty * product.price;
-  });
-  totalLinesBeforeSubInvoiceProductSumary = subInvoiceProductTable.length;
-  subInvoiceProductTable.push({
-    C: "Total",
-    D: `$${subInvoiceProductTotal}`,
-  });
-
-  const subInvoiceProductTableLines = subInvoiceProductTable.length;
-  const spaceAftersubInvoiceProduct = 2;
-
-  // **
-  // Sub invoice payment term
-  // **
-
-  let subInvoicetermTable = [];
-  subInvoicetermTable.push({
-    A: "Payment Terms",
-  });
-  subInvoicetermTable.push({
-    A: subInvoicePaymentTerm,
-  });
-  subInvoicetermTable.push({});
-
-  const subInvoicePaymentTermTableLines = subInvoicetermTable.length;
-  const spaceAftersubInvoicePaymentTerm = 2;
-
-  // **
   // Signature
   // **
   // Defined in addStyles function
@@ -707,8 +589,8 @@ const handleExport = ({
     ...renderLineSpace(space0),
     ...companyInforTable,
     ...renderLineSpace(spaceAfterCompanyInfor),
-    ...invoiceTable,
-    ...renderLineSpace(spaceAfterInvoice),
+    ...quoteTable,
+    ...renderLineSpace(spaceAfterQuote),
     ...customerDetailTable,
     ...renderLineSpace(spaceAfterCustomerDetail),
     ...billingAddressTable,
@@ -729,14 +611,6 @@ const handleExport = ({
     ...renderLineSpace(spaceAfterTerm),
     ...warrantyTable,
     ...renderLineSpace(spaceAfterWararanty),
-    ...paymentTermTable,
-    ...renderLineSpace(spaceAfterPaymentTerm),
-    ...subInvoiceTable,
-    ...renderLineSpace(spaceAfterSubInvoice),
-    ...subInvoiceProductTable,
-    ...renderLineSpace(spaceAftersubInvoiceProduct),
-    ...subInvoicetermTable,
-    ...renderLineSpace(spaceAftersubInvoicePaymentTerm),
   ];
   // const file = XLSX.readFile(fileName);
 
@@ -746,11 +620,11 @@ const handleExport = ({
   XLSX.utils.book_append_sheet(workBook, workSheet, "Sheet 1");
   XLSX.writeFile(workBook, fileName);
 
-  const totalLinesBeforeInvoiceTable =
+  const totalLinesBeforequoteTable =
     space0 + companyInforLines + spaceAfterCompanyInfor;
 
   const totalLinesBeforeCustomerDetailTable =
-    totalLinesBeforeInvoiceTable + invoiceTableLines + spaceAfterCustomerDetail;
+    totalLinesBeforequoteTable + quoteTableLines + spaceAfterCustomerDetail;
 
   const totalLinesBeforeBillingAddressTable =
     totalLinesBeforeCustomerDetailTable +
@@ -832,33 +706,13 @@ const handleExport = ({
   const totalLinesBeforeWarrantyTable =
     totalLinesBeforeTermTable + termTableLines + spaceAfterTerm;
 
-  const totalLinesBeforePaymentTermTable =
-    totalLinesBeforeWarrantyTable + warrantyTableLines + spaceAfterWararanty;
-
-  const totalLinesBeforeSubInvoiceTable =
-    totalLinesBeforePaymentTermTable +
-    paymentTermTableLines +
-    spaceAfterPaymentTerm;
-
-  const totalLinesBeforeSubInvoiceProductTable =
-    totalLinesBeforeSubInvoiceTable +
-    subInvoiceTableLines +
-    spaceAfterSubInvoice;
-
-  const totalLinesBeforeSubInvoicePaymentTermTable =
-    totalLinesBeforeSubInvoiceProductTable +
-    subInvoiceProductTableLines +
-    spaceAftersubInvoiceProduct;
-
   const totalLineBeforeSignature =
-    totalLinesBeforeSubInvoicePaymentTermTable +
-    subInvoicePaymentTermTableLines +
-    spaceAftersubInvoicePaymentTerm;
+    totalLinesBeforeWarrantyTable + warrantyTableLines + spaceAfterWararanty;
 
   const dataInfo = {
     globalStyle: "A1:Z999",
-    invoiceHeader: `A${totalLinesBeforeInvoiceTable + 1}:C${
-      totalLinesBeforeInvoiceTable + 1
+    quoteHeader: `A${totalLinesBeforequoteTable + 1}:C${
+      totalLinesBeforequoteTable + 1
     }`,
     customerDetailHeader: `A${totalLinesBeforeCustomerDetailTable + 1}:C${
       totalLinesBeforeCustomerDetailTable + 1
@@ -903,36 +757,6 @@ const handleExport = ({
     warrantyHeader: `A${totalLinesBeforeWarrantyTable + 1}:C${
       totalLinesBeforeWarrantyTable + 1
     }`,
-    paymentTermHeader: `A${totalLinesBeforePaymentTermTable + 1}:C${
-      totalLinesBeforePaymentTermTable + 1
-    }`,
-    paymentTermImg: `B${totalLinesBeforePaymentTermTable + 2}:C${
-      totalLinesBeforePaymentTermTable + 3
-    }`,
-    subInvoiceHeader: `A${totalLinesBeforeSubInvoiceTable + 1}:C${
-      totalLinesBeforeSubInvoiceTable + 1
-    }`,
-    subInvoiceProductHeader: `A${totalLinesBeforeSubInvoiceProductTable + 1}:C${
-      totalLinesBeforeSubInvoiceProductTable + 1
-    }`,
-    subInvoiceSubProductHeader: `A${
-      totalLinesBeforeSubInvoiceProductTable + 3
-    }:D${totalLinesBeforeSubInvoiceProductTable + 3}`,
-    totalSubInvoiceProduct: `C${
-      totalLinesBeforeSubInvoiceProductTable +
-      totalLinesBeforeSubInvoiceProductSumary +
-      1
-    }:D${
-      totalLinesBeforeSubInvoiceProductTable +
-      totalLinesBeforeSubInvoiceProductSumary +
-      1
-    }`,
-    subInvoicePaymentTermHeader: `A${
-      totalLinesBeforeSubInvoicePaymentTermTable + 1
-    }:C${totalLinesBeforeSubInvoicePaymentTermTable + 1}`,
-    subInvoicePaymentTermImg: `B${
-      totalLinesBeforeSubInvoicePaymentTermTable + 2
-    }:C${totalLinesBeforeSubInvoicePaymentTermTable + 3}`,
     totalLineBeforeSignature,
   };
 
@@ -954,7 +778,7 @@ const addStyles = (dataInfo) => {
       sheet.range(dataInfo.globalStyle).style({
         horizontalAlignment: "left",
       });
-      sheet.range(dataInfo.invoiceHeader).merged(true).style({
+      sheet.range(dataInfo.quoteHeader).merged(true).style({
         bold: true,
         fontSize: 24,
         bottomBorder: true,
@@ -1067,67 +891,6 @@ const addStyles = (dataInfo) => {
         bottomBorderColor: "000000",
         bottomBorderStyle: "thin",
       });
-      sheet.range(dataInfo.paymentTermHeader).merged(true).style({
-        bold: true,
-        fontSize: 14,
-        bottomBorder: true,
-        bottomBorderColor: "000000",
-        bottomBorderStyle: "thin",
-      });
-      sheet
-        .range(dataInfo.paymentTermImg)
-        .merged(true)
-        .style({
-          verticalAlignment: "center",
-          horizontalAlignment: "center",
-        })
-        .value("(image)");
-
-      sheet.range(dataInfo.subInvoiceHeader).merged(true).style({
-        bold: true,
-        fontSize: 18,
-        bottomBorder: true,
-        bottomBorderColor: "000000",
-        bottomBorderStyle: "thin",
-      });
-      sheet.range(dataInfo.subInvoiceProductHeader).merged(true).style({
-        bold: true,
-        fontSize: 12,
-        bottomBorder: true,
-        bottomBorderColor: "000000",
-        bottomBorderStyle: "thin",
-      });
-      sheet.range(dataInfo.subInvoiceSubProductHeader).style({
-        bold: true,
-        fontSize: 12,
-        fill: "C8C8C8",
-      });
-      sheet.range(dataInfo.totalSubInvoiceProduct).style({
-        bold: true,
-        fontSize: 12,
-        fontColor: "FF0000",
-        bottomBorder: true,
-        bottomBorderColor: "000000",
-        bottomBorderStyle: "double",
-        topBorder: true,
-        topBorderColor: "000000",
-        topBorderStyle: "thin",
-      });
-      sheet.range(dataInfo.subInvoicePaymentTermHeader).merged(true).style({
-        bold: true,
-        fontSize: 14,
-        bottomBorder: true,
-        bottomBorderColor: "000000",
-        bottomBorderStyle: "thin",
-      });
-      sheet
-        .range(dataInfo.subInvoicePaymentTermImg)
-        .merged(true)
-        .style({
-          verticalAlignment: "center",
-          horizontalAlignment: "center",
-        })
-        .value("(image)");
 
       // Signature
       sheet
@@ -1204,7 +967,7 @@ const generateCSV = (fn) => {
     if (err) {
       fn({
         companyInfo,
-        invoice,
+        quotation,
         customer,
         billingAddress,
         projectLocation,
@@ -1214,15 +977,11 @@ const generateCSV = (fn) => {
         remarks,
         terms,
         warranty,
-        invoicePaymentTerm,
-        subInvoice,
-        subInvoiceProductServices,
-        subInvoicePaymentTerm,
       });
     } else {
       fn({
         companyInfo,
-        invoice,
+        quotation,
         customer,
         billingAddress,
         projectLocation,
@@ -1232,10 +991,6 @@ const generateCSV = (fn) => {
         remarks,
         terms,
         warranty,
-        invoicePaymentTerm,
-        subInvoice,
-        subInvoiceProductServices,
-        subInvoicePaymentTerm,
       });
     }
   });
